@@ -35,4 +35,4 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:+'
     compile 'com.google.android.gms:play-services-fitness:+'
 }
-
+// 2nd July commit
