@@ -57,10 +57,18 @@ public class WeightsHistory {
         //Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
         //Log.i(TAG, "Range End: " + dateFormat.format(endTime));
 
-        //Check how many steps were walked and recorded in the last 7 days
         DataReadRequest readRequest = new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_WEIGHT, DataType.AGGREGATE_WEIGHT_SUMMARY)
-                .bucketByTime(1, TimeUnit.DAYS)
+                // In general here we want to set the bucket size to the smallest possible allowed, in case
+                // the user weighs themselves in a short interval (e.g. before and after a meal)
+                //
+                // Ideally we want to set the bucket size to something like 30 seconds or 1 minute, but in
+                // practice anything less than 5 minutes here results in the fitness API taking ages to
+                // respond and/or no weight readings at all on both Galaxy S5 (6.0.1) and Huawei P9 Lite (7.0)
+                //
+                // So, use a bucket time of 10 minutes, as 5 minutes is probably too close to the "black hole"
+                // of no results
+                .bucketByTime(10, TimeUnit.MINUTES)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build();
 
