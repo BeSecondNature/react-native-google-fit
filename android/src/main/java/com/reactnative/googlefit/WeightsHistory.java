@@ -235,17 +235,20 @@ public class WeightsHistory {
         for (DataPoint dp : dataSet.getDataPoints()) {
             String day = formatter.format(new Date(dp.getStartTime(TimeUnit.MILLISECONDS)));
 
-            int i = 0;
+            stepMap.putString("day", day);
+            stepMap.putDouble("startDate", dp.getStartTime(TimeUnit.MILLISECONDS));
+            stepMap.putDouble("endDate", dp.getEndTime(TimeUnit.MILLISECONDS));
 
-            for (Field field : dp.getDataType().getFields()) {
-                i++;
-                if (i > 1) continue; //Get only average instance
+            // When there is a short interval between weight readings (i.e. < 10 minutes in our case, see
+            // comments above), some phones e.g. Galaxy S5 use the average of the readings, whereas other
+            // phones e.g. Huawei P9 Lite use the most recent of the bunch (this might be related to Android
+            // versions - 6.0.1 vs 7.0 in this example for former and latter)
+            //
+            // For aggregated weight summary, only the min, max and average values are available (i.e. the
+            // most recent sample is not an option), so use average value to maximise the match between values
+            // returned here and values as reported by Google Fit app
+            stepMap.putDouble("value", dp.getValue(Field.FIELD_AVERAGE).asFloat());
 
-                stepMap.putString("day", day);
-                stepMap.putDouble("startDate", dp.getStartTime(TimeUnit.MILLISECONDS));
-                stepMap.putDouble("endDate", dp.getEndTime(TimeUnit.MILLISECONDS));
-                stepMap.putDouble("value", dp.getValue(field).asFloat());
-            }
         }
         map.pushMap(stepMap);
     }
